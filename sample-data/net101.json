@@ -1,0 +1,175 @@
+{
+  "subject": { "name": "Computer Networking", "code": "NET101" },
+  "questions": [
+    {
+      "external_id": "net-001",
+      "text": "Which characteristic allows a network to expand rapidly?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "Scalability" },
+        { "label": "B", "text": "Quality of service" },
+        { "label": "C", "text": "Reliability" },
+        { "label": "D", "text": "Accessibility" }
+      ],
+      "correct_answers": ["A"],
+      "explanation": null,
+      "image": null
+    },
+    {
+      "external_id": "net-002",
+      "text": "Which device forwards Ethernet frames based on the destination MAC address?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "Hub" },
+        { "label": "B", "text": "Switch" },
+        { "label": "C", "text": "Repeater" },
+        { "label": "D", "text": "Modem" }
+      ],
+      "correct_answers": ["B"],
+      "explanation": "A switch keeps a MAC address table and forwards a frame only out of the port that leads to the destination.",
+      "image": null
+    },
+    {
+      "external_id": "net-003",
+      "text": "Which of the following are private IPv4 address ranges?\n(Select all that apply.)",
+      "type": "multiple_choice",
+      "options": [
+        { "label": "A", "text": "10.0.0.0/8" },
+        { "label": "B", "text": "172.16.0.0/12" },
+        { "label": "C", "text": "192.168.0.0/16" },
+        { "label": "D", "text": "172.32.0.0/12" },
+        { "label": "E", "text": "8.8.8.0/24" }
+      ],
+      "correct_answers": ["A", "B", "C"],
+      "explanation": "RFC 1918 reserves 10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 for private use.",
+      "image": null
+    },
+    {
+      "external_id": "net-004",
+      "text": "Which layer of the OSI model is responsible for end-to-end delivery and error recovery between hosts?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "Network" },
+        { "label": "B", "text": "Transport" },
+        { "label": "C", "text": "Session" },
+        { "label": "D", "text": "Data link" }
+      ],
+      "correct_answers": ["B"],
+      "explanation": null,
+      "image": null
+    },
+    {
+      "external_id": "net-005",
+      "text": "A subnet uses the mask 255.255.255.192 ($/26$).\n\nHow many usable host addresses does each subnet provide?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "30" },
+        { "label": "B", "text": "62" },
+        { "label": "C", "text": "64" },
+        { "label": "D", "text": "126" }
+      ],
+      "correct_answers": ["B"],
+      "explanation": "A /26 leaves 6 host bits, so the number of usable hosts is $2^{6} - 2 = 62$.",
+      "image": null
+    },
+    {
+      "external_id": "net-006",
+      "text": "Which command shows every router (hop) a packet passes through on its way to a destination?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "ping" },
+        { "label": "B", "text": "tracert / traceroute" },
+        { "label": "C", "text": "netstat" },
+        { "label": "D", "text": "nslookup" }
+      ],
+      "correct_answers": ["B"],
+      "explanation": null,
+      "image": null
+    },
+    {
+      "external_id": "net-007",
+      "text": "Which protocols operate at the application layer of the TCP/IP model?\n(Select all that apply.)",
+      "type": "multiple_choice",
+      "options": [
+        { "label": "A", "text": "HTTP" },
+        { "label": "B", "text": "TCP" },
+        { "label": "C", "text": "DNS" },
+        { "label": "D", "text": "IP" },
+        { "label": "E", "text": "SMTP" }
+      ],
+      "correct_answers": ["A", "C", "E"],
+      "explanation": null,
+      "image": null
+    },
+    {
+      "external_id": "net-008",
+      "text": "What is the default subnet mask of a Class C IPv4 network?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "255.0.0.0" },
+        { "label": "B", "text": "255.255.0.0" },
+        { "label": "C", "text": "255.255.255.0" },
+        { "label": "D", "text": "255.255.255.128" }
+      ],
+      "correct_answers": ["C"],
+      "explanation": null,
+      "image": null
+    },
+    {
+      "external_id": "net-009",
+      "text": "Which protocol automatically assigns IP addresses to hosts on a network?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "DNS" },
+        { "label": "B", "text": "ARP" },
+        { "label": "C", "text": "DHCP" },
+        { "label": "D", "text": "ICMP" }
+      ],
+      "correct_answers": ["C"],
+      "explanation": "DHCP leases an address, subnet mask, default gateway and DNS server to a client.",
+      "image": null
+    },
+    {
+      "external_id": "net-010",
+      "text": "Consider the following statements about TCP:\n1. It is connection-oriented.\n2. It guarantees ordered delivery of data.\n3. It has no flow control.\n\nWhich statements are true?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "1 only" },
+        { "label": "B", "text": "1 and 2 only" },
+        { "label": "C", "text": "2 and 3 only" },
+        { "label": "D", "text": "1, 2 and 3" }
+      ],
+      "correct_answers": ["B"],
+      "explanation": "TCP provides flow control through the receive window, so statement 3 is false.",
+      "image": null
+    },
+    {
+      "external_id": "net-011",
+      "text": "Which physical topology connects every device to a central switch or hub?",
+      "type": "single_choice",
+      "options": [
+        { "label": "A", "text": "Bus" },
+        { "label": "B", "text": "Ring" },
+        { "label": "C", "text": "Star" },
+        { "label": "D", "text": "Mesh" }
+      ],
+      "correct_answers": ["C"],
+      "explanation": null,
+      "image": null
+    },
+    {
+      "external_id": "net-012",
+      "text": "Which of the following are benefits of using VLANs?\n(Select all that apply.)",
+      "type": "multiple_choice",
+      "options": [
+        { "label": "A", "text": "Smaller broadcast domains" },
+        { "label": "B", "text": "Better security through segmentation" },
+        { "label": "C", "text": "Longer maximum cable lengths" },
+        { "label": "D", "text": "Logical grouping of users regardless of physical location" }
+      ],
+      "correct_answers": ["A", "B", "D"],
+      "explanation": null,
+      "image": null
+    }
+  ]
+}

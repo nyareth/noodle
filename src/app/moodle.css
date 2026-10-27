@@ -1,0 +1,312 @@
+/* =====================================================================================
+   Moodle "Boost" (4.x) look-alike. Everything quiz-related is copied from Moodle's own
+   stylesheets so the attempt page matches the real thing:
+     theme/boost/scss/moodle/question.scss   -> .que / .info / .formulation / .outcome
+     mod/quiz/styles.css + boost modules.scss -> .qnbutton navigation block, summary, review table
+     theme/boost/scss/preset/default.scss     -> colours, radius, font size
+   Tweak the :root variables first; if your campus Moodle differs, send a screenshot and change
+   the matching block below. The trafficlight icons are Font Awesome Free 6.6.0 (CC BY 4.0),
+   taken from Moodle's pix/i/grade_*.svg.
+   This file is imported into Tailwind's "components" layer, so Tailwind utilities still win.
+   ===================================================================================== */
+:root {
+  --m-primary: #0f6cbf; --m-primary-hover: #0d5ca2; --m-primary-active: #0c5699;
+  --m-success: #357a32; --m-danger: #ca3120; --m-info: #008196; --m-warning: #f0ad4e;
+  --m-gray-100: #f8f9fa; --m-gray-200: #e9ecef; --m-gray-300: #dee2e6; --m-gray-400: #ced4da;
+  --m-gray-500: #8f959e; --m-gray-600: #6a737b; --m-gray-700: #495057; --m-gray-900: #1d2125;
+  --m-radius: .5rem;
+  --m-navbar-h: 60px;
+  --m-drawer-w: 315px;
+  --m-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* ---------- base (Bootstrap "reboot" as Moodle ships it) ---------- */
+body.moodle { margin: 0; font-family: var(--m-font); font-size: .9375rem; line-height: 1.5; color: var(--m-gray-900); background: var(--m-gray-100); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.moodle *, .moodle *::before, .moodle *::after { box-sizing: border-box; }
+.moodle h1, .moodle h2, .moodle h3, .moodle h4, .moodle h5, .moodle h6 { margin: 0 0 .5rem; font-weight: 700; line-height: 1.2; }
+.moodle h1 { font-size: 2.34375rem; } .moodle h2, .moodle .h2 { font-size: 1.875rem; } .moodle h3 { font-size: 1.640625rem; }
+.moodle h4 { font-size: 1.40625rem; } .moodle h5 { font-size: 1.171875rem; } .moodle h6 { font-size: .9375rem; }
+.moodle p { margin: 0 0 1rem; }
+.moodle ul, .moodle ol { margin: 0 0 1rem; padding-left: 2rem; }
+.moodle ul { list-style: disc; } .moodle ol { list-style: decimal; }
+.moodle a { color: var(--m-primary); text-decoration: none; }
+.moodle a:hover { color: #0a4c8c; text-decoration: underline; }
+.moodle img { max-width: 100%; height: auto; vertical-align: middle; display: inline-block; }
+.moodle table { border-collapse: collapse; }
+.moodle button, .moodle input, .moodle select, .moodle textarea { font: inherit; color: inherit; }
+.moodle hr { border: 0; border-top: 1px solid rgba(0,0,0,.1); margin: 1rem 0; }
+.moodle small, .moodle .small { font-size: .875em; }
+.moodle code, .moodle pre { font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: .875em; }
+.moodle .accesshide, .moodle .sr-only { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------- helpers (Bootstrap-style, so markup reads like Moodle's) ---------- */
+.d-flex { display: flex; } .d-none { display: none; } .d-block { display: block; } .d-inline-block { display: inline-block; }
+.flex-wrap { flex-wrap: wrap; } .flex-column { flex-direction: column; } .flex-fill { flex: 1 1 auto; }
+.align-items-center { align-items: center; } .align-items-start { align-items: flex-start; } .align-items-end { align-items: flex-end; }
+.justify-content-between { justify-content: space-between; } .justify-content-center { justify-content: center; } .justify-content-end { justify-content: flex-end; }
+.ms-auto { margin-left: auto; } .me-auto { margin-right: auto; }
+.gap-1 { gap: .25rem; } .gap-2 { gap: .5rem; } .gap-3 { gap: 1rem; }
+.m-0 { margin: 0; } .mb-0 { margin-bottom: 0; } .mb-1 { margin-bottom: .25rem; } .mb-2 { margin-bottom: .5rem; } .mb-3 { margin-bottom: 1rem; } .mb-4 { margin-bottom: 1.5rem; }
+.mt-1 { margin-top: .25rem; } .mt-2 { margin-top: .5rem; } .mt-3 { margin-top: 1rem; } .mt-4 { margin-top: 1.5rem; }
+.ms-1 { margin-left: .25rem; } .ms-2 { margin-left: .5rem; } .me-1 { margin-right: .25rem; } .me-2 { margin-right: .5rem; }
+.p-0 { padding: 0; } .p-3 { padding: 1rem; } .py-2 { padding-top: .5rem; padding-bottom: .5rem; }
+.w-100 { width: 100%; } .w-auto { width: auto; } .text-center { text-align: center; } .text-end { text-align: right; } .text-nowrap { white-space: nowrap; }
+.text-muted { color: var(--m-gray-600); } .text-success { color: var(--m-success); } .text-danger { color: var(--m-danger); } .text-warning { color: #90682f; }
+.fw-bold { font-weight: 700; } .fw-normal { font-weight: 400; } .text-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clearfix::after { content: ""; display: table; clear: both; }
+.hidden-print { }
+
+/* ---------- navbar ---------- */
+.moodle .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; height: calc(var(--m-navbar-h) + 1px); display: flex; align-items: stretch; padding: 0 1rem; background: #fff; border-bottom: 1px solid var(--m-gray-300); }
+.moodle .navbar-brand { display: flex; align-items: center; margin-right: 1rem; padding: .25rem 0; font-size: 1.171875rem; font-weight: 400; color: var(--m-gray-900); white-space: nowrap; }
+.moodle .navbar-brand:hover { color: var(--m-gray-900); text-decoration: none; }
+.moodle .navbar-brand .brandmark { width: 34px; height: 34px; margin-right: .6rem; border-radius: 8px; background: var(--m-primary); color: #fff; font-weight: 700; font-size: 1rem; display: inline-flex; align-items: center; justify-content: center; }
+.moodle .primary-nav { display: flex; align-items: stretch; margin: 0; padding: 0; list-style: none; }
+.moodle .primary-nav .nav-link { display: flex; align-items: center; height: 100%; padding: 0 1rem; color: rgba(0,0,0,.6); border-bottom: 3px solid transparent; white-space: nowrap; }
+.moodle .primary-nav .nav-link:hover { color: rgba(0,0,0,.9); background: var(--m-gray-100); text-decoration: none; }
+.moodle .primary-nav .nav-link.active { color: rgba(0,0,0,.9); border-bottom-color: var(--m-primary); }
+.moodle .navbar-right { margin-left: auto; display: flex; align-items: center; }
+.moodle .usermenu { position: relative; height: 100%; display: flex; align-items: center; }
+.moodle .usermenu > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: .5rem; height: 100%; padding: 0 .75rem; }
+.moodle .usermenu > summary::-webkit-details-marker { display: none; }
+.moodle .usermenu > summary:hover { background: var(--m-gray-100); }
+.moodle .userinitials { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: .9375rem; font-weight: 400; color: #fff; background: #6a737b; letter-spacing: .02em; }
+.moodle .caret { width: 0; height: 0; border-left: .3em solid transparent; border-right: .3em solid transparent; border-top: .3em solid var(--m-gray-600); }
+.moodle .usermenu .dropdown-menu { position: absolute; right: .5rem; top: calc(100% + 2px); min-width: 235px; padding: .5rem 0; background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: var(--m-radius); box-shadow: 0 .5rem 1rem rgba(0,0,0,.175); z-index: 1040; }
+.moodle .dropdown-item { display: block; width: 100%; padding: .25rem 1.75rem .25rem .75rem; text-align: left; color: var(--m-gray-900); background: none; border: 0; cursor: pointer; font-size: .9375rem; }
+.moodle .dropdown-item:hover { color: #fff; background: var(--m-primary); text-decoration: none; }
+.moodle .dropdown-header { padding: .25rem .75rem; font-size: .875rem; color: var(--m-gray-600); }
+.moodle .dropdown-divider { height: 0; margin: .5rem 0; border-top: 1px solid var(--m-gray-300); }
+
+/* ---------- page frame ---------- */
+.moodle #page { margin-top: calc(var(--m-navbar-h) + 1px); padding: 0 1.5rem 1rem; min-height: calc(100vh - var(--m-navbar-h) - 1px); }
+.moodle #page-header { padding-top: .25rem; }
+.moodle .breadcrumb { display: flex; flex-wrap: wrap; padding: .5rem 0; margin: 0 0 .25rem; list-style: none; background: transparent; font-size: .9375rem; }
+.moodle .breadcrumb-item + .breadcrumb-item { padding-left: .5rem; }
+.moodle .breadcrumb-item + .breadcrumb-item::before { float: left; padding-right: .5rem; color: var(--m-gray-600); content: "/"; }
+.moodle .breadcrumb-item.active { color: var(--m-gray-600); }
+.moodle .page-header-headings { margin: .25rem 0 1rem; }
+.moodle .page-header-headings h1 { margin: 0; font-weight: 700; }
+.moodle .secondary-nav { display: flex; flex-wrap: wrap; margin: 0 0 1rem; padding: 0; list-style: none; border-bottom: 1px solid var(--m-gray-300); }
+.moodle .secondary-nav a { display: block; padding: .6rem 1rem; color: var(--m-gray-600); border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.moodle .secondary-nav a:hover { color: var(--m-gray-900); text-decoration: none; background: var(--m-gray-100); }
+.moodle .secondary-nav a.active { color: var(--m-gray-900); border-bottom-color: var(--m-primary); }
+.moodle #region-main { background: #fff; border: 1px solid var(--m-gray-300); border-radius: var(--m-radius); padding: 1.5rem; margin-bottom: 1rem; }
+.moodle #page-footer { padding: 1rem 0; font-size: .875rem; color: var(--m-gray-600); }
+.moodle .page-with-drawer { margin-right: var(--m-drawer-w); }
+.moodle .drawer-right { position: fixed; top: calc(var(--m-navbar-h) + 1px); right: 0; bottom: 0; width: var(--m-drawer-w); padding: 20px; overflow-y: auto; background: #f2f2f2; box-shadow: -2px 2px 4px rgba(0,0,0,.25); z-index: 1020; }
+
+/* ---------- buttons ---------- */
+.moodle .btn { display: inline-block; padding: .375rem .75rem; font-size: .9375rem; line-height: 1.5; font-weight: 400; text-align: center; vertical-align: middle; cursor: pointer; user-select: none; color: var(--m-gray-900); background-color: transparent; border: 1px solid transparent; border-radius: var(--m-radius); transition: color .15s, background-color .15s, border-color .15s, box-shadow .15s; }
+.moodle .btn:hover { text-decoration: none; }
+.moodle .btn:focus-visible, .moodle a:focus-visible, .moodle summary:focus-visible { outline: 0; box-shadow: 0 0 0 .25rem rgba(15,108,191,.5); }
+.moodle .btn:disabled, .moodle .btn.disabled { opacity: .65; pointer-events: none; }
+.moodle .btn-primary { color: #fff; background-color: var(--m-primary); border-color: var(--m-primary); }
+.moodle .btn-primary:hover { color: #fff; background-color: var(--m-primary-hover); border-color: #0c5699; }
+.moodle .btn-primary:active { background-color: var(--m-primary-active); }
+.moodle .btn-secondary { color: var(--m-gray-900); background-color: var(--m-gray-400); border-color: var(--m-gray-400); }
+.moodle .btn-secondary:hover { color: var(--m-gray-900); background-color: #d3d9df; border-color: #c4cbd2; }
+.moodle .btn-outline-secondary { color: var(--m-gray-700); border-color: var(--m-gray-500); background: #fff; }
+.moodle .btn-outline-secondary:hover { color: var(--m-gray-900); background: var(--m-gray-200); }
+.moodle .btn-danger { color: #fff; background-color: var(--m-danger); border-color: var(--m-danger); }
+.moodle .btn-danger:hover { color: #fff; background-color: #b02a1c; }
+.moodle .btn-link { color: var(--m-primary); background: none; border-color: transparent; padding-left: 0; padding-right: 0; }
+.moodle .btn-link:hover { color: #0a4c8c; text-decoration: underline; }
+.moodle .btn-sm { padding: .25rem .5rem; font-size: .8203125rem; border-radius: .4rem; }
+
+/* ---------- forms ---------- */
+.moodle .form-label { display: inline-block; margin-bottom: .5rem; font-weight: 400; }
+.moodle .form-control, .moodle .form-select { display: block; width: 100%; padding: .375rem .75rem; font-size: .9375rem; line-height: 1.5; color: var(--m-gray-900); background: #fff; border: 1px solid var(--m-gray-500); border-radius: var(--m-radius); }
+.moodle textarea.form-control { min-height: calc(1.5em + .75rem + 2px); resize: vertical; }
+.moodle .form-control:focus, .moodle .form-select:focus { border-color: #87b6df; outline: 0; box-shadow: 0 0 0 .25rem rgba(15,108,191,.25); }
+.moodle .form-control:disabled { background: var(--m-gray-200); }
+.moodle .form-control-sm, .moodle .form-select-sm { padding: .25rem .5rem; font-size: .8203125rem; }
+.moodle .form-text { margin-top: .25rem; font-size: .875em; color: var(--m-gray-600); }
+.moodle .form-check { display: flex; align-items: center; gap: .5rem; margin-bottom: .25rem; }
+.moodle .form-check label { margin: 0; }
+.moodle .is-invalid { border-color: var(--m-danger); }
+.moodle .invalid-feedback { color: var(--m-danger); font-size: .875em; margin-top: .25rem; }
+.moodle .mb-field { margin-bottom: 1rem; }
+.moodle .mono { font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: .8125rem; }
+
+/* ---------- alerts, badges, cards ---------- */
+.moodle .alert { position: relative; padding: 1rem; margin-bottom: 1rem; border: 0 solid transparent; border-radius: var(--m-radius); }
+.moodle .alert > :last-child { margin-bottom: 0; }
+.moodle .alert-success { color: #20491e; background: #d7e4d6; } .moodle .alert-danger { color: #791d13; background: #f4d6d2; }
+.moodle .alert-info { color: #004d5a; background: #cce6ea; } .moodle .alert-warning { color: #90682f; background: #fcefdc; }
+.moodle .badge { display: inline-block; padding: .35em .65em; font-size: .75em; font-weight: 700; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .375rem; }
+.moodle .badge-success { background: var(--m-success); } .moodle .badge-danger { background: var(--m-danger); } .moodle .badge-secondary { background: var(--m-gray-600); } .moodle .badge-info { background: var(--m-info); } .moodle .badge-warning { background: #f0ad4e; color: #1d2125; }
+.moodle .card { background: #fff; border: 1px solid rgba(0,0,0,.125); border-radius: var(--m-radius); }
+.moodle .card-body { padding: 1.25rem; }
+.moodle .card-title { margin-bottom: .5rem; }
+.moodle .card-footer { padding: .75rem 1.25rem; border-top: 1px solid rgba(0,0,0,.125); }
+.moodle .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.moodle .coursecard { display: flex; flex-direction: column; height: 100%; }
+.moodle .coursecard .banner { height: 6rem; border-radius: var(--m-radius) var(--m-radius) 0 0; }
+.moodle .coursecard .card-body { flex: 1; }
+
+/* ---------- tables ---------- */
+.moodle .generaltable { width: 100%; margin-bottom: 1rem; color: var(--m-gray-900); }
+.moodle .generaltable th, .moodle .generaltable td { padding: .75rem; vertical-align: top; border-top: 1px solid var(--m-gray-300); text-align: left; }
+.moodle .generaltable thead th { vertical-align: bottom; border-bottom: 2px solid var(--m-gray-300); border-top: 0; font-weight: 700; }
+.moodle .generaltable tbody tr:nth-of-type(odd) > * { background: rgba(0,0,0,.03); }
+.moodle .generaltable tbody tr:hover > * { background: rgba(0,0,0,.075); }
+.moodle .generaltable td.text-end, .moodle .generaltable th.text-end { text-align: right; }
+.moodle .generaltable td.compact, .moodle .generaltable th.compact { padding: .4rem .75rem; }
+.moodle .table-responsive { overflow-x: auto; }
+.moodle .statedetails { display: block; font-size: .7em; }
+
+/* ---------- modal (Moodle confirmation dialogs) ---------- */
+.moodle .modal-backdrop { position: fixed; inset: 0; z-index: 1050; background: rgba(0,0,0,.5); display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 1.75rem .5rem; }
+.moodle .modal-dialog { width: 100%; max-width: 500px; margin-top: 1.75rem; }
+.moodle .modal-content { background: #fff; border: 1px solid rgba(0,0,0,.2); border-radius: .6rem; box-shadow: 0 .5rem 1rem rgba(0,0,0,.5); }
+.moodle .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--m-gray-300); }
+.moodle .modal-title { margin: 0; font-size: 1.171875rem; }
+.moodle .modal-body { padding: 1rem; }
+.moodle .modal-footer { display: flex; justify-content: flex-end; gap: .5rem; padding: .75rem 1rem; border-top: 1px solid var(--m-gray-300); }
+.moodle .btn-close { width: 1.5rem; height: 1.5rem; padding: 0; border: 0; border-radius: .25rem; background: transparent; font-size: 1.5rem; line-height: 1; color: #000; opacity: .5; cursor: pointer; }
+.moodle .btn-close:hover { opacity: .75; }
+
+/* ---------- login ---------- */
+.moodle .login-wrap { max-width: 520px; margin: 3rem auto 0; }
+.moodle .login-wrap .card-body { padding: 2rem 2.5rem; }
+.moodle .login-wrap h2 { text-align: center; margin-bottom: 1.5rem; }
+.moodle .login-divider { margin: 1.5rem 0; }
+
+/* ---------- subject page (Moodle's quiz "view" page) ---------- */
+.moodle .quizinfo { text-align: center; margin-bottom: 1rem; }
+.moodle .quizinfo p { margin-bottom: .25rem; }
+.moodle .quizstartbuttondiv { text-align: center; margin: 1.25rem 0; }
+.moodle .quizstartform { display: inline-flex; align-items: center; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+.moodle .quizstartform .form-control { width: 6.5rem; text-align: center; }
+
+/* =========================================================================================
+   Question engine - question.scss
+   ========================================================================================= */
+.que { text-align: left; margin: 0 auto 1.8em auto; display: flex; align-items: start; gap: 1rem; }
+.que .info { flex-shrink: 0; width: 7em; padding: .5em; background-color: var(--m-gray-100); border: 1px solid #c1c9d0; border-radius: 2px; }
+.que h3.no { margin: 0; font-size: .8em; line-height: 1; font-weight: 700; }
+.que span.qno { font-size: 1.5em; font-weight: bold; word-break: break-word; }
+.que .info > div { font-size: .8em; margin-top: .7em; }
+.que .info .questionflag.editable { cursor: pointer; }
+.que .info .questionflag label { display: inline; margin: 0; cursor: pointer; }
+.que .info .questionflag input { vertical-align: bottom; }
+.que .content { flex-grow: 1; min-width: 0; }
+.que .formulation, .que .outcome, .que .comment { position: relative; padding: 1rem; margin-bottom: 1rem; border: 0 solid transparent; border-radius: var(--m-radius); }
+.que .formulation { color: #001a1e; background-color: #e6f2f5; }
+.que .outcome, .que .comment { color: #a87937; background-color: #fdf3e4; }
+.que .outcome a { color: #0a4c8c; }
+.que .ablock { margin: .7em 0 .3em 0; }
+.que .specificfeedback, .que .generalfeedback, .que .rightanswer, .que .feedback, .que p { margin: 0 0 .5em; }
+.que .qtext { margin-bottom: 1.5em; }
+.que .qtext > :last-child { margin-bottom: 0; }
+.que .qtext p, .que .generalfeedback p, .que .answer label, .que .rightanswer { white-space: pre-wrap; }
+.que .qtext ul, .que .qtext ol, .que .generalfeedback ul, .que .generalfeedback ol { margin: 0 0 .5em; padding-left: 2rem; }
+.que .qtext img { max-width: 100%; height: auto; }
+.que .qtext .qimage { display: block; margin: .75rem 0 0; }
+.que .qtext .qimage img { max-width: min(100%, 720px); border: 1px solid rgba(0,0,0,.1); border-radius: 2px; background: #fff; }
+.que pre.qcode { margin: 0 0 .75rem; padding: .6rem .8rem; background: rgba(255,255,255,.7); border: 1px solid rgba(0,0,0,.1); border-radius: 4px; overflow-x: auto; white-space: pre; }
+.que .katex-display { margin: .5em 0; overflow-x: auto; overflow-y: hidden; }
+.que .prompt { margin-bottom: .25rem; }
+.que .validationerror { color: var(--m-danger); }
+.que.multichoice .answer div.r0, .que.multichoice .answer div.r1 { display: flex; margin: .25rem 0; align-items: flex-start; }
+.que.multichoice .answer div.r0 input, .que.multichoice .answer div.r1 input { margin: .3rem .5rem; width: 14px; flex-shrink: 0; }
+.que.multichoice .answer .answernumber { min-width: 1.5em; }
+.que.multichoice .answer label { display: flex; margin: 0; cursor: pointer; }
+.que.multichoice .answer .option-text { flex: 1 1 auto; margin-left: .25rem; }
+.que.multichoice .answer .option-text > :last-child { margin-bottom: 0; }
+.que .answer .feedbackicon { display: inline-flex; align-items: center; margin-left: .5rem; }
+.que .answer .feedbackicon svg { width: 1em; height: 1em; }
+.que .clearchoice { margin: .25rem 0 0 .25rem; }
+.que .clearchoice button { padding: 0; font-size: .8203125rem; }
+.que .questionflagimage { width: 16px; height: 16px; padding-right: 3px; vertical-align: text-bottom; }
+.que .questionflag .flagon { color: var(--m-danger); }
+.que .info .state { font-weight: 400; }
+
+/* =========================================================================================
+   Quiz attempt: navigation block, submit buttons, timer, summary, review
+   ========================================================================================= */
+.moodle .submitbtns { display: flex; margin-top: .5rem; }
+.moodle .submitbtns .mod_quiz-next-nav { margin-left: auto; }
+.moodle .block.card { margin-bottom: 1rem; }
+.moodle #mod_quiz_navblock .card-body { padding: 1rem; }
+.moodle #mod_quiz_navblock .card-title { font-size: 1.171875rem; margin-bottom: 0; }
+.moodle .qn_buttons { display: flow-root; }
+.moodle .qnbutton { display: block; position: relative; float: left; width: 30px; height: 40px; overflow: hidden; margin: .3em .3em .3em 0; padding: 0; border: 0; border-radius: 3px; background: #fff; background-image: none; text-align: center; font-size: 14px; line-height: 20px; font-weight: normal; white-space: nowrap; color: var(--m-gray-900); text-decoration: none; cursor: pointer; }
+.moodle .qnbutton:hover { text-decoration: underline; color: var(--m-gray-900); }
+.moodle .qnbutton .thispageholder, .moodle .qnbutton .trafficlight { display: block; position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+.moodle .qnbutton .thispageholder { border: 1px solid; border-radius: 3px; z-index: 1; }
+.moodle .qnbutton.thispage .thispageholder { border-width: 3px; }
+.moodle .allquestionsononepage .qnbutton.thispage .thispageholder { border-width: 1px; }
+.moodle .qnbutton .trafficlight { border: 0; background: #fff none center / 10px no-repeat scroll; height: 20px; margin-top: 20px; border-radius: 0 0 3px 3px; }
+.moodle .qnbutton.answersaved, .moodle .qnbutton.answersaved .trafficlight { background-color: var(--m-gray-300); }
+.moodle .qnbutton.notyetanswered .trafficlight { background-color: #fff; }
+.moodle .qnbutton.flagged .thispageholder { background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13'%3E%3Cpath d='M0 0l13 13V0z' fill='%23ea0000'/%3E%3C/svg%3E") 15px 0 no-repeat; }
+.moodle .qnbutton.correct, .moodle .qnbutton.correct .trafficlight { background-color: #dff4d8; }
+.moodle .qnbutton.correct .thispageholder { border-color: #2f6e2c; }
+.moodle .qnbutton.correct .trafficlight { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23306e2d' d='M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-111 111-47-47c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9l64 64c9.4 9.4 24.6 9.4 33.9 0L369 209z'/%3E%3C/svg%3E"); background-size: 14px; }
+.moodle .qnbutton.incorrect, .moodle .qnbutton.incorrect .trafficlight { background-color: #fdd; }
+.moodle .qnbutton.incorrect .thispageholder { border-color: #b62c1d; }
+.moodle .qnbutton.incorrect .trafficlight { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23b62c1d' d='M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z'/%3E%3C/svg%3E"); background-size: 14px; }
+.moodle .othernav { clear: both; margin: .5em 0 0; }
+.moodle .othernav a { display: block; margin: .5em 0; }
+.moodle .autosave_info { font-size: small; color: var(--m-gray-600); margin-top: .5rem; min-height: 1.4em; }
+.moodle #quiz-timer-wrapper { position: fixed; top: calc(var(--m-navbar-h) + 12px); right: calc(var(--m-drawer-w) + 1.75rem); z-index: 1010; }
+.moodle #quiz-timer { margin: 0; padding: .25rem .75rem; border: 1px solid var(--m-danger); background: #fff; border-radius: .375rem; font-variant-numeric: tabular-nums; box-shadow: 0 1px 3px rgba(0,0,0,.12); white-space: nowrap; }
+.moodle #quiz-timer.timeleft-low { background: var(--m-danger); color: #fff; font-weight: 700; }
+.moodle .quizsummary .generaltable td, .moodle .quizsummary .generaltable th { text-align: left; }
+.moodle .quizsummary { text-align: center; }
+.moodle .quizsummary table { margin-left: auto; margin-right: auto; width: auto; min-width: 60%; }
+.moodle .quizsummary .submitbtns { justify-content: center; gap: .5rem; margin-top: 1.5rem; }
+.moodle table.quizreviewsummary { width: 100%; margin: 0 0 1.5rem; border-collapse: separate; border-spacing: 0 2px; }
+.moodle table.quizreviewsummary th.cell { padding: 1px .5em 1px 1em; font-weight: bold; text-align: right; width: 10em; background: #f0f0f0; vertical-align: top; }
+.moodle table.quizreviewsummary td.cell { padding: 1px 1em 1px .5em; text-align: left; background: #fafafa; }
+.moodle .quizreviewsummary .cell { padding-top: .25rem; padding-bottom: .25rem; }
+
+/* ---------- admin ---------- */
+.moodle .toolbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin-bottom: 1rem; }
+.moodle .toolbar .form-control, .moodle .toolbar .form-select { width: auto; min-width: 12rem; }
+.moodle .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.moodle .stat { padding: 1rem; border: 1px solid var(--m-gray-300); border-radius: var(--m-radius); background: #fff; }
+.moodle .stat .num { display: block; font-size: 1.875rem; font-weight: 700; line-height: 1.1; }
+.moodle .stat .label { color: var(--m-gray-600); font-size: .875rem; }
+.moodle .opt-row { display: grid; grid-template-columns: 4rem 1fr auto auto; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+.moodle .preview-q { border: 1px solid var(--m-gray-300); border-radius: var(--m-radius); padding: .75rem 1rem; margin-bottom: .75rem; background: #fff; }
+.moodle .preview-q.skip { opacity: .6; }
+.moodle .preview-q .opt { display: flex; gap: .5rem; padding: .1rem 0; }
+.moodle .preview-q .opt.correct { color: #20491e; font-weight: 700; }
+.moodle .preview-q .opt .lbl { min-width: 1.5rem; color: var(--m-gray-600); }
+.moodle .issue-list { margin: 0; padding-left: 1.25rem; }
+.moodle .qthumb { max-width: 220px; max-height: 140px; border: 1px solid var(--m-gray-300); border-radius: 4px; background: #fff; }
+.moodle .pager { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; margin-top: .5rem; }
+.moodle .clickable { cursor: pointer; }
+
+/* ---------- small screens ---------- */
+@media (max-width: 767.98px) {
+  .moodle .page-with-drawer { margin-right: 0; }
+  .moodle .drawer-right { position: static; width: auto; padding: 0; background: transparent; box-shadow: none; margin: 0 0 1rem; }
+  .moodle #page { padding: 0 .75rem 1rem; }
+  .moodle #region-main { padding: 1rem; }
+  .moodle .que { flex-direction: column; }
+  .moodle .que .info, .moodle .que .content { width: 100%; }
+  .moodle .navbar { padding: 0 .5rem; }
+  .moodle .primary-nav .nav-link { padding: 0 .6rem; }
+  .moodle .navbar-brand .brandtext { display: none; }
+  .moodle .opt-row { grid-template-columns: 3rem 1fr auto; }
+}
+@media print { .moodle .navbar, .moodle .drawer-right, .moodle .submitbtns { display: none; } .moodle .page-with-drawer { margin-right: 0; } }
+
+/* flag control inside the question info box */
+.que .info .questionflag button { display: inline-flex; align-items: flex-start; gap: .1rem; padding: 0; margin: 0; background: none; border: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.que .info .questionflag button:hover { text-decoration: underline; }
+.que .info .questionflag.on button { color: var(--m-gray-900); }
+.que .info .questionflag.on svg { color: var(--m-danger); }
+.que .info .questionflag svg { flex-shrink: 0; margin-top: 1px; }
+.que { scroll-margin-top: calc(var(--m-navbar-h) + 24px); }
+.moodle .qn_buttons a.qnbutton { box-sizing: border-box; }
+
+/* Tailwind's preflight makes every svg display:block; Moodle icons are inline */
+.moodle svg { display: inline-block; vertical-align: text-bottom; }
+.moodle .h1 { font-size: 2.34375rem; } .moodle .h3 { font-size: 1.640625rem; } .moodle .h4 { font-size: 1.40625rem; }
+.moodle .h5 { font-size: 1.171875rem; } .moodle .h6 { font-size: .9375rem; }
+@media (max-width: 767.98px) { .moodle #quiz-timer-wrapper { right: .75rem; top: calc(var(--m-navbar-h) + 8px); } }
