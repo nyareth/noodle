@@ -48,14 +48,16 @@ class LocalStorage implements Storage {
 class S3Storage implements Storage {
   private ctx?: Promise<{ client: import("@aws-sdk/client-s3").S3Client; sdk: typeof import("@aws-sdk/client-s3") }>;
   private async c() {
-    this.ctx ??= import("@aws-sdk/client-s3").then((sdk) => {
+    this.ctx ??= Promise.all([
+      import("@aws-sdk/client-s3"),
+      import("@vercel/functions/oidc"),
+    ]).then(([sdk, { awsCredentialsProvider }]) => {
       const cfg = env.s3;
-      if (!cfg.bucket) throw new Error("S3_BUCKET is not set");
+      if (!cfg.bucket) throw new Error("noodle_S3_BUCKET_NAME is not set");
+      if (!cfg.roleArn) throw new Error("noodle_AWS_ROLE_ARN is not set");
       const client = new sdk.S3Client({
         region: cfg.region,
-        endpoint: cfg.endpoint,
-        forcePathStyle: cfg.forcePathStyle,
-        credentials: cfg.accessKeyId ? { accessKeyId: cfg.accessKeyId, secretAccessKey: cfg.secretAccessKey } : undefined,
+        credentials: awsCredentialsProvider({ roleArn: cfg.roleArn }),
       });
       return { client, sdk };
     });

@@ -34,12 +34,19 @@ export const env = {
   get localUploadDir() { return process.env.LOCAL_UPLOAD_DIR || "./uploads"; },
   get s3() {
     return {
-      bucket: process.env.S3_BUCKET ?? "",
-      region: process.env.S3_REGION || "auto",
-      endpoint: process.env.S3_ENDPOINT || undefined,
-      accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
-      forcePathStyle: bool(process.env.S3_FORCE_PATH_STYLE, false),
+      bucket: process.env.noodle_S3_BUCKET_NAME ?? "",
+      region: process.env.noodle_AWS_REGION || "us-east-1",
+      roleArn: process.env.noodle_AWS_ROLE_ARN ?? "",
     };
+  },
+  // get s3() {
+  //   return {
+  //     bucket: process.env.S3_BUCKET ?? "",
+  //     region: process.env.S3_REGION || "auto",
+  //     endpoint: process.env.S3_ENDPOINT || undefined,
+  //     accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
+  //     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+  //     forcePathStyle: bool(process.env.S3_FORCE_PATH_STYLE, false),
+  //   };
   },
 };
