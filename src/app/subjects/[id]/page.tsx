@@ -84,7 +84,7 @@ export default async function SubjectPage({ params }: { params: Promise<{ id: st
           <StartAttemptForm
             subjectId={subject.id}
             available={subject.available_questions}
-            defaultCount={Math.min(subject.available_questions, finished[0]?.total_questions ?? 10)}
+            defaultCount={Math.min(subject.available_questions, finished[0]?.total_questions ?? 50)}
             secondsPerQuestion={subject.time_per_question_seconds}
             label={attempts.length ? "Re-attempt quiz" : "Attempt quiz"}
           />

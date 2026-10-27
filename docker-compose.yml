@@ -1,19 +1,16 @@
 services:
   db:
-    image: postgres:16
-    restart: unless-stopped
+    image: postgres:latest
+    container_name: quiz-postgres
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: quiz
       POSTGRES_PASSWORD: quiz
       POSTGRES_DB: quiz
-    ports:
-      - "5432:5432"
     volumes:
-      - quizdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U quiz -d quiz"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+      - pgdata:/var/lib/postgresql # <-- Removed "/data" from the container path
+
 volumes:
-  quizdata:
+  pgdata:
+

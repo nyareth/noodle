@@ -42,7 +42,7 @@ export default async function HomePage() {
                 {s.description && <p className="text-muted small">{s.description}</p>}
                 <div className="small">
                   {s.available_questions} question{s.available_questions === 1 ? "" : "s"} available
-                  {s.time_per_question_seconds ? <> · timed ({formatDuration(s.time_per_question_seconds)} per question)</> : null}
+                  {s.time_per_question_seconds ? <> · {formatDuration(s.time_per_question_seconds * s.available_questions)}</> : null}
                 </div>
               </div>
               <div className="card-footer d-flex align-items-center justify-content-between gap-2">
