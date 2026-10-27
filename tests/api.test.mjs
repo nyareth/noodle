@@ -91,6 +91,7 @@ test("anonymous and student requests are rejected on protected endpoints", async
   assert.equal((await anon.get("/api/subjects")).status, 401);
   assert.equal((await anon.get("/api/admin/subjects")).status, 401);
   assert.equal((await alice.get("/api/admin/subjects")).status, 403);
+  assert.equal((await alice.get("/api/admin/subjects/00000000-0000-4000-8000-000000000000/export")).status, 403);
   assert.equal((await alice.post("/api/admin/import", { data: {}, commit: false })).status, 403);
   assert.equal((await alice.get("/api/admin/attempts")).status, 403);
 });
@@ -135,6 +136,22 @@ test("import: preview, commit, and duplicate protection", async () => {
   // wording is stored exactly as supplied
   const q = (await admin.get(`/api/admin/questions?subject_id=${subject.id}&q=number 7?`)).data.rows[0];
   assert.equal(q.text, "Sample question number 7?");
+});
+
+test("admin can download a subject's questions as importable JSON", async () => {
+  const r = await admin.get(`/api/admin/subjects/${subject.id}/export`);
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get("content-disposition") ?? "", /\.json/);
+  assert.equal(r.data.subject.name, subject.name);
+  assert.equal(r.data.subject.code, subject.code);
+  assert.equal(r.data.questions.length, 50);
+  const q = r.data.questions.find((x) => x.external_id.endsWith("-7"));
+  assert.equal(q.text, "Sample question number 7?");
+  assert.equal(q.type, "single_choice");
+  assert.deepEqual(q.correct_answers, ["C"]);
+  const preview = await admin.post("/api/admin/import", { data: r.data, commit: false });
+  assert.equal(preview.data.ok, true, JSON.stringify(preview.data.errors));
+  assert.equal(preview.data.counts.skip, 50);
 });
 
 test("asking for more questions than exist is refused with the available count", async () => {

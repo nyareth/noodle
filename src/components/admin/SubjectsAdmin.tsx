@@ -143,6 +143,7 @@ export default function SubjectsAdmin({ subjects }: { subjects: SubjectRow[] }) 
                 <td>{s.shuffle_options ? "Yes" : "No"}</td>
                 <td>{s.attempt_count}</td>
                 <td className="text-nowrap">
+                  <a className="btn btn-sm btn-outline-secondary me-1" href={`/api/admin/subjects/${s.id}/export`} download={`${s.name}.json`}>Download JSON</a>
                   <button className="btn btn-sm btn-outline-secondary me-1" onClick={() => edit(s)}>Edit</button>
                   <button className="btn btn-sm btn-danger" onClick={() => remove(s)}>Delete</button>
                 </td>
