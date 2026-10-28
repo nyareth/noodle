@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="#FDC852" />
+
+  <!-- Steam -->
+  <path d="M 115 75 Q 105 55 115 45 T 110 20" fill="none" stroke="#F7D57B" stroke-width="4" stroke-linecap="round" />
+  <path d="M 135 65 Q 125 45 135 35 T 130 15" fill="none" stroke="#F7D57B" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Chopsticks -->
+  <line x1="125" y1="100" x2="160" y2="35" stroke="#2D3748" stroke-width="8" stroke-linecap="round" />
+  <line x1="145" y1="100" x2="180" y2="40" stroke="#2D3748" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Noodles Back/Outlines -->
+  <g fill="none" stroke="#E27D22" stroke-width="14" stroke-linecap="round">
+    <!-- Left loop -->
+    <path d="M 35 105 C 35 45 105 45 105 105" />
+    <path d="M 65 105 C 65 75 85 75 85 105" />
+    <!-- Right loop -->
+    <path d="M 95 105 C 95 50 165 50 165 105" />
+    <path d="M 120 105 C 120 75 145 75 145 105" />
+  </g>
+
+  <!-- Noodles Inner Highlights -->
+  <g fill="none" stroke="#FEE08B" stroke-width="6" stroke-linecap="round">
+    <path d="M 35 105 C 35 45 105 45 105 105" />
+    <path d="M 65 105 C 65 75 85 75 85 105" />
+    <path d="M 95 105 C 95 50 165 50 165 105" />
+    <path d="M 120 105 C 120 75 145 75 145 105" />
+  </g>
+
+  <!-- Bowl Base / Shadow -->
+  <rect x="75" y="160" width="50" height="20" rx="4" fill="#2D3748" />
+
+  <!-- Bowl Main Body (Masked for perfect edge) -->
+  <clipPath id="bowlClip">
+    <path d="M 20 105 L 180 105 C 180 170 145 178 100 178 C 55 178 20 170 20 105 Z" />
+  </clipPath>
+
+  <rect x="0" y="0" width="200" height="200" fill="#F26C24" clip-path="url(#bowlClip)" />
+  <!-- Bottom darker bowl curve -->
+  <path d="M 20 145 C 50 180 150 180 180 145 L 180 200 L 20 200 Z" fill="#E05B15" clip-path="url(#bowlClip)" />
+  <!-- Top orange stripe -->
+  <rect x="0" y="105" width="200" height="15" fill="#F89D42" clip-path="url(#bowlClip)" />
+  <!-- Thin yellow stripe -->
+  <rect x="0" y="120" width="200" height="4" fill="#FCE49C" clip-path="url(#bowlClip)" />
+
+  <!-- Graduation Cap -->
+  <!-- Skullcap Base -->
+  <path d="M 47 52 L 103 52 L 98 70 C 85 78 65 78 52 70 Z" fill="#2D3748" />
+  <!-- Diamond Top -->
+  <polygon points="75,30 120,45 75,60 30,45" fill="#2D3748" stroke="#2D3748" stroke-width="2" stroke-linejoin="round" />
+  <!-- Tassel Cord -->
+  <path d="M 75 45 C 55 45 40 50 40 70" fill="none" stroke="#2D3748" stroke-width="3" />
+  <!-- Tassel Fringe Base -->
+  <circle cx="40" cy="70" r="3" fill="#2D3748" />
+  <polygon points="36,70 44,70 46,85 34,85" fill="#2D3748" />
+  <!-- Tassel Center Button -->
+  <circle cx="75" cy="45" r="2.5" fill="#1A202C" />
+</svg>

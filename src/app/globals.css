@@ -1,2 +1,8 @@
-@import "tailwindcss";
+/*
+ * Tailwind supplies the reset (preflight). Automatic class scanning is switched off on purpose:
+ * the Moodle-style helper classes (w-100, mb-3, mt-4, gap-3 ...) are defined in moodle.css with Bootstrap's
+ * meaning, and Tailwind would otherwise generate its own, different, utilities with the same names.
+ * To use Tailwind utilities in new components, add e.g.  @source "../components/my-new-folder";
+ */
+@import "tailwindcss" source(none);
 @import "./moodle.css" layer(components);

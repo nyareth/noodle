@@ -1,16 +1,49 @@
+# Noodle: PostgreSQL + the app.
+#   cp .env.example .env        (edit the passwords)
+#   docker compose up -d --build      -> http://localhost:${APP_PORT:-3000}
+# Only the database (for `npm run dev` on your own machine):  docker compose up -d db
+name: noodle
+
 services:
   db:
-    image: postgres:latest
-    container_name: quiz-postgres
-    ports:
-      - "5432:5432"
+    image: postgres:16-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: quiz
-      POSTGRES_PASSWORD: quiz
-      POSTGRES_DB: quiz
+      POSTGRES_USER: ${POSTGRES_USER:-noodle}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-noodle}
+      POSTGRES_DB: ${POSTGRES_DB:-noodle}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql # <-- Removed "/data" from the container path
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  app:
+    build: .
+    image: noodle-app
+    restart: unless-stopped
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+    # everything in .env (site name, registration, UPLOADTHING_TOKEN, ...) reaches the app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # inside compose the database host is the service name "db", not localhost
+      DATABASE_URL: postgres://${POSTGRES_USER:-noodle}:${POSTGRES_PASSWORD:-noodle}@db:5432/${POSTGRES_DB:-noodle}
+      LOCAL_UPLOAD_DIR: /app/uploads
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    volumes:
+      # only used when UPLOADTHING_TOKEN is empty (local image storage)
+      - uploads:/app/uploads
 
 volumes:
   pgdata:
-
+  uploads:

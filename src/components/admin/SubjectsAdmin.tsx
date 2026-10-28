@@ -32,6 +32,30 @@ export default function SubjectsAdmin({ subjects }: { subjects: SubjectRow[] }) 
   const [ok, setOk] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const [bannerBusy, setBannerBusy] = useState(false);
+  const editing = form.id ? subjects.find((s) => s.id === form.id) : undefined;
+
+  async function uploadBanner(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !form.id) return;
+    setBannerBusy(true); setError(null); setOk(null);
+    try {
+      const body = new FormData();
+      body.set("file", file);
+      await api(`/api/admin/subjects/${form.id}/banner`, { form: body });
+      setOk("Banner saved.");
+      router.refresh();
+    } catch (err) { setError(err instanceof Error ? err.message : "Could not upload the banner."); }
+    finally { setBannerBusy(false); }
+  }
+  async function removeBanner() {
+    if (!form.id || !window.confirm("Remove this subject's banner image?")) return;
+    setBannerBusy(true); setError(null); setOk(null);
+    try { await api(`/api/admin/subjects/${form.id}/banner`, { method: "DELETE" }); setOk("Banner removed."); router.refresh(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Could not remove the banner."); }
+    finally { setBannerBusy(false); }
+  }
 
   function edit(s: SubjectRow) {
     setOk(null); setError(null);
@@ -95,6 +119,20 @@ export default function SubjectsAdmin({ subjects }: { subjects: SubjectRow[] }) 
               <label className="form-label" htmlFor="s-desc">Description (optional)</label>
               <input id="s-desc" className="form-control" value={form.description} onChange={(e) => set("description", e.target.value)} />
             </div>
+            <div className="mt-3">
+              <label className="form-label" htmlFor="s-banner">Banner image</label>
+              {editing ? (
+                <div className="d-flex flex-wrap gap-3 align-items-center">
+                  {editing.banner_src
+                    ? /* eslint-disable-next-line @next/next/no-img-element */ <img className="banner-preview" src={editing.banner_src} alt="Current banner" />
+                    : <span className="text-muted">No banner yet - a colour gradient is shown on the card instead.</span>}
+                  <input id="s-banner" className="form-control" style={{ maxWidth: 320 }} type="file" accept="image/png,image/jpeg,image/gif,image/webp" onChange={uploadBanner} disabled={bannerBusy} />
+                  {editing.banner_src && <button type="button" className="btn btn-outline-secondary" onClick={removeBanner} disabled={bannerBusy}>Remove banner</button>}
+                  {bannerBusy && <span className="text-muted">Uploading…</span>}
+                </div>
+              ) : <div className="form-text">Add the subject first, then edit it to upload a banner image.</div>}
+              <div className="form-text">Wide pictures work best (about 1200 × 400). PNG, JPEG, GIF or WebP, up to 5 MB. Shown on the subject card and at the top of the subject page.</div>
+            </div>
             <div className="d-flex flex-wrap gap-3 mt-3">
               <div style={{ flex: "1 1 200px" }}>
                 <label className="form-label" htmlFor="s-time">Time per question (seconds)</label>
@@ -128,12 +166,13 @@ export default function SubjectsAdmin({ subjects }: { subjects: SubjectRow[] }) 
       <div className="table-responsive">
         <table className="generaltable">
           <thead>
-            <tr><th>Code</th><th>Name</th><th>Questions</th><th>Time / question</th><th>Review</th><th>Per page</th><th>Shuffle</th><th>Attempts</th><th /></tr>
+            <tr><th>Banner</th><th>Code</th><th>Name</th><th>Questions</th><th>Time / question</th><th>Review</th><th>Per page</th><th>Shuffle</th><th>Attempts</th><th /></tr>
           </thead>
           <tbody>
-            {subjects.length === 0 && <tr><td colSpan={9} className="text-muted">No subjects yet. Add one above, or import a JSON question bank.</td></tr>}
+            {subjects.length === 0 && <tr><td colSpan={10} className="text-muted">No subjects yet. Add one above, or import a JSON question bank.</td></tr>}
             {subjects.map((s) => (
               <tr key={s.id}>
+                <td>{s.banner_src ? /* eslint-disable-next-line @next/next/no-img-element */ <img className="banner-thumb" src={s.banner_src} alt="" /> : <span className="text-muted">-</span>}</td>
                 <td>{s.code ?? "-"}</td>
                 <td><b>{s.name}</b></td>
                 <td><Link href={`/admin/questions?subject_id=${s.id}`}>{s.available_questions} usable / {s.total_questions}</Link></td>

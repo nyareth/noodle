@@ -1,15 +1,13 @@
 import { randomUUID } from "node:crypto";
-import { env } from "../env";
 import { ApiError, isUniqueViolation } from "../errors";
 import { query, queryOne, tx, type Db } from "../db";
 import type { QuestionType } from "../grading";
 import type { ParsedQuestion } from "../import-validation";
-import { IMAGE_EXT, getStorage, sniffImage } from "../storage";
+import { discardImage, gcImage, imageSrc, storeImage } from "./images";
 import { isUuid } from "../util";
 
 export type QuestionContent = Omit<ParsedQuestion, "index">;
 
-export const imageSrc = (key: string | null, url: string | null) => (key ? `/api/images/${key}` : url);
 
 /** Replace a question's options and answer key (labels are matched exactly as supplied). */
 export async function writeOptions(db: Db, questionId: string, options: { label: string; text: string }[], correctLabels: string[]) {
@@ -146,16 +144,6 @@ export async function setQuestionActive(id: string, active: boolean) {
   if (!r) throw new ApiError(404, "not_found", "Question not found.");
 }
 
-/** Removes an uploaded file only when nothing (live question or past attempt) still points at it. */
-async function gcImage(key: string | null) {
-  if (!key) return;
-  const used = await queryOne(
-    "SELECT 1 FROM questions WHERE image_key = $1 UNION ALL SELECT 1 FROM attempt_questions WHERE image_key = $1 LIMIT 1",
-    [key],
-  );
-  if (!used) await getStorage().remove(key).catch((e) => console.error("Could not delete image", key, e));
-}
-
 export async function deleteQuestion(id: string) {
   if (!isUuid(id)) throw new ApiError(404, "not_found", "Question not found.");
   const row = await queryOne<{ image_key: string | null }>("DELETE FROM questions WHERE id = $1 RETURNING image_key", [id]);
@@ -165,12 +153,7 @@ export async function deleteQuestion(id: string) {
 
 export async function setQuestionImage(id: string, bytes: Buffer, alt: string | null) {
   if (!isUuid(id)) throw new ApiError(404, "not_found", "Question not found.");
-  if (bytes.length === 0) throw new ApiError(422, "empty_file", "The uploaded file is empty.");
-  if (bytes.length > env.maxImageBytes) throw new ApiError(413, "image_too_large", `Images can be at most ${Math.round(env.maxImageBytes / 1024 / 1024)} MB.`);
-  const mime = sniffImage(bytes);
-  if (!mime) throw new ApiError(422, "unsupported_image", "Upload a PNG, JPEG, GIF or WebP image.");
-  const key = `${randomUUID()}.${IMAGE_EXT[mime]}`;
-  await getStorage().put(key, bytes, mime);
+  const key = await storeImage(bytes);
   try {
     const previous = await tx(async (db) => {
       const prev = await queryOne<{ image_key: string | null }>("SELECT image_key FROM questions WHERE id = $1 FOR UPDATE", [id], db);
@@ -183,7 +166,7 @@ export async function setQuestionImage(id: string, bytes: Buffer, alt: string | 
     });
     await gcImage(previous);
   } catch (e) {
-    await getStorage().remove(key).catch(() => undefined);
+    await discardImage(key);
     throw e;
   }
   return getQuestionDetail(id);

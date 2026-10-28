@@ -14,7 +14,7 @@ export default async function RegisterPage() {
   return (
     <MoodleShell user={null} title="New account" bare>
       {env.allowRegistration ? (
-        <RegisterForm domains={env.allowedEmailDomains} />
+        <RegisterForm domains={env.allowedEmailDomains} siteName={env.siteName} />
       ) : (
         <div className="login-wrap">
           <Alert kind="info">

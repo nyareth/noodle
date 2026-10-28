@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { query, queryOne } from "../db";
+import { query, queryOne, tx } from "../db";
 import { ApiError, isUniqueViolation } from "../errors";
-import type { QuestionType } from "../grading";
 import { isUuid } from "../util";
+import { discardImage, gcImage, imageSrc, storeImage } from "./images";
 
 export const REVIEW_POLICIES = ["score_only", "correctness", "answers", "full"] as const;
 export type ReviewPolicy = (typeof REVIEW_POLICIES)[number];
@@ -30,28 +30,35 @@ export interface SubjectRow {
   review_policy: ReviewPolicy;
   questions_per_page: number;
   shuffle_options: boolean;
+  banner_key: string | null;
+  banner_src: string | null;
   available_questions: number;
   total_questions: number;
   attempt_count: number;
 }
 
-const COLUMNS = `s.id, s.code, s.name, s.description, s.time_per_question_seconds, s.review_policy, s.questions_per_page, s.shuffle_options,
+const COLUMNS = `s.id, s.code, s.name, s.description, s.time_per_question_seconds, s.review_policy, s.questions_per_page, s.shuffle_options, s.banner_key,
   (SELECT count(*) FROM questions q WHERE q.subject_id = s.id AND ${ELIGIBLE_SQL}) AS available_questions,
   (SELECT count(*) FROM questions q WHERE q.subject_id = s.id) AS total_questions,
   (SELECT count(*) FROM attempts a WHERE a.subject_id = s.id) AS attempt_count`;
 
-export const listSubjects = () => query<SubjectRow>(`SELECT ${COLUMNS} FROM subjects s ORDER BY lower(s.name)`);
+type Raw<T> = Omit<T, "banner_src">;
+const withBanner = <T extends { banner_key: string | null }>(r: T) => ({ ...r, banner_src: imageSrc(r.banner_key, null) });
+
+export const listSubjects = async () =>
+  (await query<Raw<SubjectRow>>(`SELECT ${COLUMNS} FROM subjects s ORDER BY lower(s.name)`)).map(withBanner);
 
 export async function getSubject(id: string): Promise<SubjectRow | null> {
   if (!isUuid(id)) return null;
-  return queryOne<SubjectRow>(`SELECT ${COLUMNS} FROM subjects s WHERE s.id = $1`, [id]);
+  const row = await queryOne<Raw<SubjectRow>>(`SELECT ${COLUMNS} FROM subjects s WHERE s.id = $1`, [id]);
+  return row ? withBanner(row) : null;
 }
 
 export type StudentSubject = SubjectRow & { my_attempts: number; my_best_percent: number | null };
 
 /** Subjects that have at least one question students can be given. */
-export const listSubjectsForStudent = (userId: string) =>
-  query<StudentSubject>(
+export const listSubjectsForStudent = async (userId: string) =>
+  (await query<Raw<StudentSubject>>(
     `SELECT ${COLUMNS},
         (SELECT count(*) FROM attempts a WHERE a.subject_id = s.id AND a.user_id = $1 AND a.status = 'finished') AS my_attempts,
         (SELECT max(a.score_percent) FROM attempts a WHERE a.subject_id = s.id AND a.user_id = $1 AND a.status = 'finished') AS my_best_percent
@@ -59,7 +66,7 @@ export const listSubjectsForStudent = (userId: string) =>
       WHERE EXISTS (SELECT 1 FROM questions q WHERE q.subject_id = s.id AND ${ELIGIBLE_SQL})
       ORDER BY lower(s.name)`,
     [userId],
-  );
+  )).map(withBanner);
 
 function mapConflict(e: unknown): unknown {
   if (isUniqueViolation(e, "subjects_code_key")) return new ApiError(409, "subject_code_exists", "Another subject already uses that code.");
@@ -98,83 +105,43 @@ export async function updateSubject(id: string, input: SubjectInput): Promise<Su
   }
 }
 
-export interface SubjectExportQuestion {
-  external_id: string;
-  text: string;
-  type: QuestionType;
-  options: { label: string; text: string }[];
-  correct_answers: string[];
-  explanation: string | null;
-  image: string | null;
-  image_alt: string | null;
-}
-export interface SubjectExport {
-  subject: { name: string; code: string | null };
-  questions: SubjectExportQuestion[];
-}
-
-/** Safe download name, e.g. "Intro to Python.json". */
-export function subjectExportFilename(name: string) {
-  const base = name.replace(/[\u0000-\u001f<>:"/\\|?*]+/g, " ").replace(/\s+/g, " ").trim() || "questions";
-  return `${base}.json`;
-}
-
-const exportableImage = (url: string | null) => (url && /^https?:\/\/\S+$/i.test(url) ? url : null);
-
-/** Question bank in the same JSON shape the admin import page accepts. */
-export async function exportSubjectQuestions(id: string): Promise<{ filename: string; body: SubjectExport }> {
-  const subject = await getSubject(id);
-  if (!subject) throw new ApiError(404, "not_found", "Subject not found.");
-  const questions = await query<{
-    id: string;
-    external_id: string;
-    type: QuestionType;
-    text: string;
-    explanation: string | null;
-    image_url: string | null;
-    image_alt: string | null;
-  }>("SELECT id, external_id, type, text, explanation, image_url, image_alt FROM questions WHERE subject_id = $1 ORDER BY seq", [id]);
-  const options = questions.length
-    ? await query<{ question_id: string; label: string; text: string; correct: boolean }>(
-        `SELECT o.question_id, o.label, o.text, (c.option_id IS NOT NULL) AS correct
-           FROM answer_options o
-           LEFT JOIN question_correct_answers c ON c.question_id = o.question_id AND c.option_id = o.id
-          WHERE o.question_id = ANY($1::uuid[])
-          ORDER BY o.question_id, o.position`,
-        [questions.map((q) => q.id)],
-      )
-    : [];
-  const byQuestion = new Map<string, typeof options>();
-  for (const o of options) {
-    const list = byQuestion.get(o.question_id);
-    if (list) list.push(o);
-    else byQuestion.set(o.question_id, [o]);
-  }
-  return {
-    filename: subjectExportFilename(subject.name),
-    body: {
-      subject: { name: subject.name, code: subject.code },
-      questions: questions.map((q) => {
-        const opts = byQuestion.get(q.id) ?? [];
-        return {
-          external_id: q.external_id,
-          text: q.text,
-          type: q.type,
-          options: opts.map(({ label, text }) => ({ label, text })),
-          correct_answers: opts.filter((o) => o.correct).map((o) => o.label),
-          explanation: q.explanation,
-          image: exportableImage(q.image_url),
-          image_alt: q.image_alt,
-        };
-      }),
-    },
-  };
-}
-
 /** Deletes the subject and its questions. Past attempts are kept (they hold their own frozen copy). */
 export async function deleteSubject(id: string) {
   const s = await getSubject(id);
   if (!s) throw new ApiError(404, "not_found", "Subject not found.");
+  const keys = (await query<{ key: string }>("SELECT image_key AS key FROM questions WHERE subject_id = $1 AND image_key IS NOT NULL", [id])).map((r) => r.key);
   await query("DELETE FROM subjects WHERE id = $1", [id]);
+  for (const key of new Set([...keys, ...(s.banner_key ? [s.banner_key] : [])])) await gcImage(key);
   return { deleted_questions: s.total_questions, kept_attempts: s.attempt_count };
+}
+
+/** Attaches or replaces the subject's banner image. */
+export async function setSubjectBanner(id: string, bytes: Buffer): Promise<SubjectRow> {
+  if (!isUuid(id)) throw new ApiError(404, "not_found", "Subject not found.");
+  const key = await storeImage(bytes);
+  try {
+    const previous = await tx(async (db) => {
+      const prev = await queryOne<{ banner_key: string | null }>("SELECT banner_key FROM subjects WHERE id = $1 FOR UPDATE", [id], db);
+      if (!prev) throw new ApiError(404, "not_found", "Subject not found.");
+      await db.query("UPDATE subjects SET banner_key = $2, updated_at = now() WHERE id = $1", [id, key]);
+      return prev.banner_key;
+    });
+    await gcImage(previous);
+  } catch (e) {
+    await discardImage(key);
+    throw e;
+  }
+  return (await getSubject(id))!;
+}
+
+export async function removeSubjectBanner(id: string): Promise<SubjectRow> {
+  if (!isUuid(id)) throw new ApiError(404, "not_found", "Subject not found.");
+  const previous = await tx(async (db) => {
+    const prev = await queryOne<{ banner_key: string | null }>("SELECT banner_key FROM subjects WHERE id = $1 FOR UPDATE", [id], db);
+    if (!prev) throw new ApiError(404, "not_found", "Subject not found.");
+    await db.query("UPDATE subjects SET banner_key = NULL, updated_at = now() WHERE id = $1", [id]);
+    return prev.banner_key;
+  });
+  await gcImage(previous);
+  return (await getSubject(id))!;
 }

@@ -22,6 +22,8 @@ export default async function SubjectPage({ params }: { params: Promise<{ id: st
 
   return (
     <MoodleShell user={user} title={subject.name} crumbs={[{ label: subject.name }]}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {subject.banner_src && <img className="subject-banner" src={subject.banner_src} alt="" />}
       <div className="quizinfo">
         {subject.description && <p>{subject.description}</p>}
         <p>Questions available: <b>{subject.available_questions}</b></p>
@@ -84,7 +86,7 @@ export default async function SubjectPage({ params }: { params: Promise<{ id: st
           <StartAttemptForm
             subjectId={subject.id}
             available={subject.available_questions}
-            defaultCount={Math.min(subject.available_questions, finished[0]?.total_questions ?? 50)}
+            defaultCount={Math.min(subject.available_questions, finished[0]?.total_questions ?? 10)}
             secondsPerQuestion={subject.time_per_question_seconds}
             label={attempts.length ? "Re-attempt quiz" : "Attempt quiz"}
           />

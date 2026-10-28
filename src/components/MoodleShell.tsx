@@ -42,7 +42,8 @@ export function MoodleShell({
     <>
       <nav className="navbar" aria-label="Site navigation">
         <Link className="navbar-brand" href="/">
-          <span className="brandmark" aria-hidden="true">{name.trim()[0]?.toUpperCase() ?? "Q"}</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brandlogo" src="/noodle-logo.svg" alt="" width={36} height={36} />
           <span className="brandtext">{name}</span>
         </Link>
         {user && <NavLinks items={primary} listClass="primary-nav" linkClass="nav-link" />}
@@ -69,7 +70,7 @@ export function MoodleShell({
           {adminTabs && <NavLinks items={ADMIN_TABS} listClass="secondary-nav" linkClass="" />}
         </div>}
         <div id="page-content">
-          {raw ? children : (
+          {raw || bare ? children : (
             <section id="region-main" aria-label="Content">
               <div role="main">{children}</div>
             </section>
