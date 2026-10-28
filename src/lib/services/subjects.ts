@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { query, queryOne, tx } from "../db";
 import { ApiError, isUniqueViolation } from "../errors";
+import type { QuestionType } from "../grading";
 import { isUuid } from "../util";
 import { discardImage, gcImage, imageSrc, storeImage } from "./images";
 
@@ -144,4 +145,77 @@ export async function removeSubjectBanner(id: string): Promise<SubjectRow> {
   });
   await gcImage(previous);
   return (await getSubject(id))!;
+}
+
+export interface SubjectExportQuestion {
+  external_id: string;
+  text: string;
+  type: QuestionType;
+  options: { label: string; text: string }[];
+  correct_answers: string[];
+  explanation: string | null;
+  image: string | null;
+  image_alt: string | null;
+}
+export interface SubjectExport {
+  subject: { name: string; code: string | null };
+  questions: SubjectExportQuestion[];
+}
+
+/** Safe download name, e.g. "Intro to Python.json". */
+export function subjectExportFilename(name: string) {
+  const base = name.replace(/[\u0000-\u001f<>:"/\\|?*]+/g, " ").replace(/\s+/g, " ").trim() || "questions";
+  return `${base}.json`;
+}
+
+const exportableImage = (url: string | null) => (url && /^https?:\/\/\S+$/i.test(url) ? url : null);
+
+/** Question bank in the same JSON shape the admin import page accepts. */
+export async function exportSubjectQuestions(id: string): Promise<{ filename: string; body: SubjectExport }> {
+  const subject = await getSubject(id);
+  if (!subject) throw new ApiError(404, "not_found", "Subject not found.");
+  const questions = await query<{
+    id: string;
+    external_id: string;
+    type: QuestionType;
+    text: string;
+    explanation: string | null;
+    image_url: string | null;
+    image_alt: string | null;
+  }>("SELECT id, external_id, type, text, explanation, image_url, image_alt FROM questions WHERE subject_id = $1 ORDER BY seq", [id]);
+  const options = questions.length
+    ? await query<{ question_id: string; label: string; text: string; correct: boolean }>(
+        `SELECT o.question_id, o.label, o.text, (c.option_id IS NOT NULL) AS correct
+           FROM answer_options o
+           LEFT JOIN question_correct_answers c ON c.question_id = o.question_id AND c.option_id = o.id
+          WHERE o.question_id = ANY($1::uuid[])
+          ORDER BY o.question_id, o.position`,
+        [questions.map((q) => q.id)],
+      )
+    : [];
+  const byQuestion = new Map<string, typeof options>();
+  for (const o of options) {
+    const list = byQuestion.get(o.question_id);
+    if (list) list.push(o);
+    else byQuestion.set(o.question_id, [o]);
+  }
+  return {
+    filename: subjectExportFilename(subject.name),
+    body: {
+      subject: { name: subject.name, code: subject.code },
+      questions: questions.map((q) => {
+        const opts = byQuestion.get(q.id) ?? [];
+        return {
+          external_id: q.external_id,
+          text: q.text,
+          type: q.type,
+          options: opts.map(({ label, text }) => ({ label, text })),
+          correct_answers: opts.filter((o) => o.correct).map((o) => o.label),
+          explanation: q.explanation,
+          image: exportableImage(q.image_url),
+          image_alt: q.image_alt,
+        };
+      }),
+    },
+  };
 }
