@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ApiClientError, api, safeNext } from "@/lib/api-client";
 
-export function LoginForm({ next, canRegister }: { next?: string; canRegister: boolean }) {
+export function LoginForm({ next, canRegister, siteName }: { next?: string; canRegister: boolean; siteName: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,9 @@ export function LoginForm({ next, canRegister }: { next?: string; canRegister: b
     <div className="login-wrap">
       <div className="card">
         <div className="card-body">
-          <h2>Log in</h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="login-logo" src="/noodle-logo.svg" alt="" width={88} height={88} />
+          <h2>Log in to {siteName}</h2>
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           <form onSubmit={submit}>
             <div className="mb-3">
@@ -53,7 +55,7 @@ export function LoginForm({ next, canRegister }: { next?: string; canRegister: b
   );
 }
 
-export function RegisterForm({ domains }: { domains: string[] }) {
+export function RegisterForm({ domains, siteName }: { domains: string[]; siteName: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -79,7 +81,9 @@ export function RegisterForm({ domains }: { domains: string[] }) {
     <div className="login-wrap">
       <div className="card">
         <div className="card-body">
-          <h2>New account</h2>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="login-logo" src="/noodle-logo.svg" alt="" width={88} height={88} />
+          <h2>New account on {siteName}</h2>
           {error && <div className="alert alert-danger" role="alert">{error}</div>}
           <form onSubmit={submit}>
             <div className="mb-3">

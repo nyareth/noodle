@@ -6,7 +6,7 @@ import { ApiError } from "../errors";
 import { isQuestionCorrect, scorePercent, type QuestionType } from "../grading";
 import { optionHtml, richTextToHtml } from "../richtext";
 import { UUID_RE, isUuid, shuffle } from "../util";
-import { imageSrc } from "./questions";
+import { imageSrc } from "./images";
 import { ELIGIBLE_SQL, type ReviewPolicy } from "./subjects";
 
 /* ------------------------------------------------------------------ input schemas */

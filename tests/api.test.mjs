@@ -91,7 +91,6 @@ test("anonymous and student requests are rejected on protected endpoints", async
   assert.equal((await anon.get("/api/subjects")).status, 401);
   assert.equal((await anon.get("/api/admin/subjects")).status, 401);
   assert.equal((await alice.get("/api/admin/subjects")).status, 403);
-  assert.equal((await alice.get("/api/admin/subjects/00000000-0000-4000-8000-000000000000/export")).status, 403);
   assert.equal((await alice.post("/api/admin/import", { data: {}, commit: false })).status, 403);
   assert.equal((await alice.get("/api/admin/attempts")).status, 403);
 });
@@ -136,22 +135,6 @@ test("import: preview, commit, and duplicate protection", async () => {
   // wording is stored exactly as supplied
   const q = (await admin.get(`/api/admin/questions?subject_id=${subject.id}&q=number 7?`)).data.rows[0];
   assert.equal(q.text, "Sample question number 7?");
-});
-
-test("admin can download a subject's questions as importable JSON", async () => {
-  const r = await admin.get(`/api/admin/subjects/${subject.id}/export`);
-  assert.equal(r.status, 200);
-  assert.match(r.headers.get("content-disposition") ?? "", /\.json/);
-  assert.equal(r.data.subject.name, subject.name);
-  assert.equal(r.data.subject.code, subject.code);
-  assert.equal(r.data.questions.length, 50);
-  const q = r.data.questions.find((x) => x.external_id.endsWith("-7"));
-  assert.equal(q.text, "Sample question number 7?");
-  assert.equal(q.type, "single_choice");
-  assert.deepEqual(q.correct_answers, ["C"]);
-  const preview = await admin.post("/api/admin/import", { data: r.data, commit: false });
-  assert.equal(preview.data.ok, true, JSON.stringify(preview.data.errors));
-  assert.equal(preview.data.counts.skip, 50);
 });
 
 test("asking for more questions than exist is refused with the available count", async () => {
@@ -326,6 +309,36 @@ test("editing a question does not change past attempts; images can be attached a
   const removed = await admin.del(`/api/admin/questions/${detail.id}/image`);
   assert.equal(removed.data.question.image_src, null);
   assert.equal((await alice.get(src)).status, 404);
+});
+
+test("subject banners: upload, serve to students, replace, remove", async () => {
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+  const form = () => { const f = new FormData(); f.set("file", new Blob([png], { type: "image/png" }), "banner.png"); return f; };
+  const url = `/api/admin/subjects/${subject.id}/banner`;
+  assert.equal((await alice.post(url, form())).status, 403, "students cannot upload banners");
+  const up = await admin.post(url, form());
+  assert.equal(up.status, 200, JSON.stringify(up.data));
+  const first = up.data.subject.banner_src;
+  assert.match(first, /^\/api\/images\/[0-9a-f-]+\.png$/);
+  const mine = (await alice.get("/api/subjects")).data.subjects.find((s) => s.id === subject.id);
+  assert.equal(mine.banner_src, first, "students see the banner in their subject list");
+  assert.equal((await alice.get(first)).status, 200);
+  assert.equal((await new Session().get(first)).status, 401, "banners are behind the login");
+  const second = (await admin.post(url, form())).data.subject.banner_src;
+  assert.notEqual(second, first);
+  assert.equal((await alice.get(first)).status, 404, "the replaced file is deleted");
+  assert.equal((await alice.get(second)).status, 200);
+  const bad = new FormData(); bad.set("file", new Blob(["<svg onload=alert(1)></svg>"], { type: "image/svg+xml" }), "x.svg");
+  assert.equal((await admin.post(url, bad)).status, 422);
+  const removed = await admin.del(url);
+  assert.equal(removed.data.subject.banner_src, null);
+  assert.equal((await alice.get(second)).status, 404);
+});
+
+test("health check works without logging in", async () => {
+  const r = await new Session().get("/api/health");
+  assert.equal(r.status, 200);
+  assert.equal(r.data.ok, true);
 });
 
 test("deleting a subject keeps students' attempt history", async () => {

@@ -12,7 +12,7 @@ export type AnswerNumbering = "abc" | "ABCD" | "123" | "none";
 /** Runtime configuration. Getters so values are read when used, not at build time. */
 export const env = {
   get databaseUrl() { return process.env.DATABASE_URL ?? "postgres://quiz:quiz@localhost:5432/quiz"; },
-  get siteName() { return process.env.SITE_NAME || "Campus Quiz Practice"; },
+  get siteName() { return process.env.SITE_NAME || "Noodle"; },
   get timezone() { return process.env.APP_TIMEZONE || "Asia/Kuala_Lumpur"; },
   get answerNumbering(): AnswerNumbering {
     const v = process.env.ANSWER_NUMBERING;
@@ -30,23 +30,12 @@ export const env = {
   get maxQuestionsPerAttempt() { return int(process.env.MAX_QUESTIONS_PER_ATTEMPT, 100); },
   get deadlineGraceSeconds() { return int(process.env.DEADLINE_GRACE_SECONDS, 10); },
   get maxImageBytes() { return int(process.env.MAX_IMAGE_BYTES, 5 * 1024 * 1024); },
-  get storageDriver() { return process.env.STORAGE_DRIVER === "s3" ? "s3" : "local"; },
-  get localUploadDir() { return process.env.LOCAL_UPLOAD_DIR || "./uploads"; },
-  get s3() {
-    return {
-      bucket: process.env.noodle_S3_BUCKET_NAME ?? "",
-      region: process.env.noodle_AWS_REGION || "us-east-1",
-      roleArn: process.env.noodle_AWS_ROLE_ARN ?? "",
-    };
+  /** STORAGE_DRIVER=local|uploadthing. When unset: UploadThing if UPLOADTHING_TOKEN is set, otherwise local files. */
+  get storageDriver(): "local" | "uploadthing" {
+    const v = process.env.STORAGE_DRIVER?.trim().toLowerCase();
+    if (v === "local" || v === "uploadthing") return v;
+    return process.env.UPLOADTHING_TOKEN ? "uploadthing" : "local";
   },
-  // get s3() {
-  //   return {
-  //     bucket: process.env.S3_BUCKET ?? "",
-  //     region: process.env.S3_REGION || "auto",
-  //     endpoint: process.env.S3_ENDPOINT || undefined,
-  //     accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
-  //     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
-  //     forcePathStyle: bool(process.env.S3_FORCE_PATH_STYLE, false),
-  //   };
-  // },
+  get uploadthingToken() { return process.env.UPLOADTHING_TOKEN?.trim() ?? ""; },
+  get localUploadDir() { return process.env.LOCAL_UPLOAD_DIR || "./uploads"; },
 };

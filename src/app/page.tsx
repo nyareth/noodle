@@ -35,14 +35,17 @@ export default async function HomePage() {
         <div className="card-grid">
           {subjects.map((s) => (
             <div key={s.id} className="card coursecard">
-              <div className="banner" style={bannerStyle(s.name)} />
+              <div className="banner" style={bannerStyle(s.name)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {s.banner_src && <img src={s.banner_src} alt="" loading="lazy" />}
+              </div>
               <div className="card-body">
                 {s.code && <div className="text-muted small mb-1">{s.code}</div>}
                 <h5 className="card-title"><Link href={`/subjects/${s.id}`}>{s.name}</Link></h5>
                 {s.description && <p className="text-muted small">{s.description}</p>}
                 <div className="small">
                   {s.available_questions} question{s.available_questions === 1 ? "" : "s"} available
-                  {s.time_per_question_seconds ? <> · {formatDuration(s.time_per_question_seconds * s.available_questions)}</> : null}
+                  {s.time_per_question_seconds ? <> · timed ({formatDuration(s.time_per_question_seconds)} per question)</> : null}
                 </div>
               </div>
               <div className="card-footer d-flex align-items-center justify-content-between gap-2">
